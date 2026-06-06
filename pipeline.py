@@ -3,7 +3,7 @@ import pandas as pd
 import json
 from datetime import datetime,timezone
 
-APP_KEY = "5b4c5f2b4944491bb99e3ce4581f7f57"  # paste your TfL key here
+APP_KEY = "your_api_key"  # paste your TfL key here
 
 def fetch_vehicle_positions(line_id: str) -> list[dict]:
     """
