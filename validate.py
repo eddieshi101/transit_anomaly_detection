@@ -105,10 +105,24 @@ def generate_output_report(df: pd.DataFrame, anomalies: pd.DataFrame, line_id: s
     path = f"data/anomaly_report_{line_id}_{timestamp}.csv"
 
     report = anomalies[[
-        "vehicle_id", "line_id", "station_name", "direction",
-        "minutes_to_station", "delay_category", "delay_vs_average",
-        "anomaly_score", "flag_severe_delay", "flag_delay_outlier",
-        "flag_bunching", "flag_missing_direction", "ingested_at"
+        "vehicle_id",
+        "line_id",
+        "station_name",
+        "direction",
+        "minutes_to_station",
+        "delay_category",
+        "delay_vs_average",
+        "times_flagged_last_7_runs",
+        "total_runs_seen",
+        "avg_delay_historical",
+        "is_historically_late",
+        "anomaly_score",
+        "flag_severe_delay",
+        "flag_delay_outlier",
+        "flag_bunching",
+        "flag_missing_direction",
+        "flag_historically_late",
+        "ingested_at"
     ]].copy()
 
     report.to_csv(path, index=False)
