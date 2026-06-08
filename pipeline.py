@@ -54,8 +54,13 @@ if __name__ == "__main__":
     from features import engineer_features
     from detect import run_detection, get_anomalies
     from validate import run_validation, print_validation_report, generate_output_report
+    from history import init_db, save_run, compute_historical_features
 
     line_id = "central"
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    # initialise database on first run, no-op on subsequent runs
+    init_db()
 
     print(f"Fetching vehicles for line: {line_id}")
     raw = fetch_vehicle_positions(line_id)
@@ -63,25 +68,31 @@ if __name__ == "__main__":
 
     df = raw_to_dataframe(raw)
 
-    # Stage 1: validate before doing anything else
+    # validate before doing anything else
     validation = run_validation(df)
     print_validation_report(validation)
     if not validation["passed"]:
         print("Pipeline halted due to validation failures.")
         exit(1)
 
-    # Stage 2: feature engineering
+    # feature engineering
     df = engineer_features(df)
 
-    # Stage 3: detection
+    # add historical features before detection
+    df = compute_historical_features(df, line_id)
+
+    # detection
     df = run_detection(df)
     anomalies = get_anomalies(df, min_score=1)
 
     print("Top anomalies:")
     print(anomalies[[
         "vehicle_id", "station_name", "minutes_to_station",
-        "delay_category", "anomaly_score"
+        "delay_category", "anomaly_score",
+        "times_flagged_last_7_runs", "is_historically_late"
     ]].head(10).to_string(index=False))
 
-    # Stage 4: output
+    # save this run to history AFTER detection so scores are included
+    save_run(df, run_id)
+
     generate_output_report(df, anomalies, line_id)
