@@ -45,6 +45,14 @@ def flag_missing_direction(df: pd.DataFrame) -> pd.DataFrame:
     df["flag_missing_direction"] = df["missing_direction"]
     return df
 
+def flag_historically_late(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Flags vehicles that have been anomalous in more than half
+    of their recent runs. This is your historical signal.
+    """
+    df["flag_historically_late"] = df["is_historically_late"].fillna(False)
+    return df
+
 
 def compute_anomaly_score(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -60,6 +68,7 @@ def compute_anomaly_score(df: pd.DataFrame) -> pd.DataFrame:
         "flag_delay_outlier", 
         "flag_bunching",
         "flag_missing_direction",
+        "flag_historically_late",
     ]
     # sum booleans — True counts as 1, False as 0
     df["anomaly_score"] = df[flag_cols].sum(axis=1)
@@ -75,7 +84,9 @@ def run_detection(df: pd.DataFrame) -> pd.DataFrame:
     df = flag_delay_outlier(df)
     df = flag_bunching(df)
     df = flag_missing_direction(df)
+    df = flag_historically_late(df)
     df = compute_anomaly_score(df)
+    
     return df
 
 
